@@ -1,0 +1,9 @@
+# cycle address type priority thread
+0 0x1000 R 1 0
+1 0x1040 R 1 0
+2 0x1080 R 1 0
+5 0x2000 W 0 1
+6 0x2040 R 1 1
+10 0x3000 R 2 2
+12 0x1000 R 1 0
+15 0x5000 W 0 3
