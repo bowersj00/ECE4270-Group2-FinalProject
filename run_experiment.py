@@ -5,7 +5,7 @@ Example:
 """
 
 import argparse
-from config import DEFAULT_CONFIG
+from config import DEFAULT_CONFIG, DRAMConfig
 from dram.bank import BankState
 from dram.queue import BoundedQueue
 from trace.reader import TraceReader
@@ -106,9 +106,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--trace", default="data/sample_trace.txt")
     parser.add_argument("--policy", default="fcfs", choices=["fcfs", "frfcfs", "priority"])
+    parser.add_argument("--queue_depth", default=4, type=int, help="Queue depth")
+    parser.add_argument("--bank_count", default=2, type=int, help="Number of banks")
+    parser.add_argument("--refresh_interval", default=1.0, type=float, help="Refresh interval scaling factor")
+    parser.add_argument("--thread_count", default=1, type=int, help="Number of threads")
     args = parser.parse_args()
 
-    results = run_simulation(args.trace, args.policy, DEFAULT_CONFIG)
+    config = DRAMConfig(QUEUE_DEPTH=args.queue_depth, NUM_BANKS=args.bank_count, tREFI=int(DRAMConfig.tREFI * args.refresh_interval))
+
+    results = run_simulation(args.trace, args.policy, config)
     print("\n=== DRAM Simulator Starter Results ===")
     for key, value in results.items():
         print(f"{key}: {value}")
