@@ -16,10 +16,11 @@ class PriorityScheduler(Scheduler):
         - implement write urgency aging if needed
         - study fairness impact
         """
+
         for p in self.PRIORITY_LEVELS:
             candidates = [
                 r for r in queue
-                if r.priority == p and bank_ready_for_request(banks[r.bank_id], current_cycle)
+                if self.effective_priority(r, current_cycle) == p and bank_ready_for_request(banks[r.bank_id], current_cycle)
             ]
             if not candidates:
                 continue
@@ -33,3 +34,16 @@ class PriorityScheduler(Scheduler):
             return min(pool, key=lambda r: r.arrival_cycle)
 
         return None
+    
+    def effective_priority(self, r, current_cycle, write_queue_full=False):
+        base = r.priority
+        wait = current_cycle - r.arrival_cycle
+
+        # Aging
+        aged = max(0, base - (wait // 20))
+
+        # Write urgency override
+        if write_queue_full and r.type == "WRITE":
+            return 0  # force high priority
+
+        return aged
