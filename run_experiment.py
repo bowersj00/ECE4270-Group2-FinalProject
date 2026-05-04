@@ -8,6 +8,7 @@ import argparse
 from config import DEFAULT_CONFIG, DRAMConfig
 from dram.bank import BankState
 from dram.queue import BoundedQueue
+from dram.refresh import RefreshController
 from trace.reader import TraceReader
 from schedulers.fcfs import FCFSScheduler
 from schedulers.frfcfs import FRFCFSScheduler
@@ -65,6 +66,7 @@ def run_simulation(trace_file, policy, config):
     reader = TraceReader(trace_file, config)
     scheduler = build_scheduler(policy)
     stats = StatisticsCollector(config)
+    refresh_ctrl = RefreshController(config)
 
     inflight = []
 
@@ -87,7 +89,8 @@ def run_simulation(trace_file, policy, config):
 
         # 3. Tick banks / refresh skeleton
         for bank in banks:
-            bank.tick(cycle)
+            # bank.tick(cycle)
+            refresh_ctrl.tick_bank(bank, cycle)
 
         # 4. Select next request
         selected = scheduler.select(queue.items(), banks, cycle)

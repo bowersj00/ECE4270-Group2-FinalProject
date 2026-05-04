@@ -45,37 +45,17 @@ class BankState:
     # self.timer tracks number of cycles left in current state
     # refreah_timer tracks when a refresh is necessary
     def tick(self, cycle: int):
-        """Advance one cycle.
-
-        Starter behavior only decrements refresh timer.
-
-        TODO(student):
-        - decrement current command timer
-        - transition FSM state when timer reaches zero
-        - force refresh when refresh_timer reaches zero
-        - if open row exists before refresh, precharge first
-        """
-
-        # Decrement time remaining in current state
+        """Advance FSM one cycle. Refresh is handled by RefreshController."""
         self.timer -= 1
 
-        # Check for transition from ACTIVATING to ACTIVE
-        if self.timer <= 0 and self.state == BankFSMState.ACTIVATING:
-            self.state = BankFSMState.ACTIVE
+        if self.timer <= 0:
+            if self.state == BankFSMState.ACTIVATING:
+                self.state = BankFSMState.ACTIVE
+            elif self.state == BankFSMState.PRECHARGING:
+                self.state = BankFSMState.IDLE
+                self.open_row = None
 
-        # Decrement refresh timer
-        self.refresh_timer -= 1
-
-        # Check for refresh needed
-        if self.refresh_timer <= 0:
-            # Placeholder: mark refresh busy window.
-            # Students should implement accurate refresh command behavior.
-            self.state = BankFSMState.REFRESHING
-            self.busy_until = max(self.busy_until, cycle + self.config.tRFC)
-            self.refresh_timer = self.config.tREFI
-
-        # If bank is refreshing, and no longer busy_until, the bank is done refreshing
-        # and can return to the idle state
+        # Transition out of REFRESHING when tRFC window expires
         if self.state == BankFSMState.REFRESHING and cycle >= self.busy_until:
             self.state = BankFSMState.IDLE
             self.open_row = None
