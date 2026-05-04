@@ -9,6 +9,15 @@ class BoundedQueue:
         if len(self._items) >= self.max_depth:
             return False
         self._items.append(req)
+        # define priority assignment scheme
+        # since read instructions are faster, they are given higher priority
+        if req.req_type == "READ":
+            req.priority = 0
+        elif req.req_type == "WRITE":
+            req.priority = 2
+        else:
+            req.priority = 1  # default / normal
+
         return True
 
     def remove(self, req):
